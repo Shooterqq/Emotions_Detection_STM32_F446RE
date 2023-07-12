@@ -1,0 +1,1211 @@
+[
+    {
+        "id": "134517ea29179e1f",
+        "type": "subflow",
+        "name": "Select .csv variable (2)",
+        "info": "",
+        "category": "STMicroelectronics",
+        "in": [
+            {
+                "x": 220,
+                "y": 120,
+                "wires": [
+                    {
+                        "id": "0363e444310a6df5"
+                    }
+                ]
+            }
+        ],
+        "out": [
+            {
+                "x": 1180,
+                "y": 120,
+                "wires": [
+                    {
+                        "id": "30c6c47d5efdac48",
+                        "port": 0
+                    }
+                ]
+            }
+        ],
+        "env": [
+            {
+                "name": "varfilter",
+                "type": "str",
+                "value": "",
+                "ui": {
+                    "icon": "font-awesome/fa-cog",
+                    "label": {
+                        "en-US": "Variable name"
+                    },
+                    "type": "input",
+                    "opts": {
+                        "types": [
+                            "str"
+                        ]
+                    }
+                }
+            }
+        ],
+        "color": "#3CB4E6",
+        "icon": "node-red/arrow-in.svg"
+    },
+    {
+        "id": "30c6c47d5efdac48",
+        "type": "change",
+        "z": "134517ea29179e1f",
+        "name": "keep only table of duplets",
+        "rules": [
+            {
+                "t": "set",
+                "p": "payload",
+                "pt": "msg",
+                "to": "payload.variabledata",
+                "tot": "msg"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 950,
+        "y": 120,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "0363e444310a6df5",
+        "type": "switch",
+        "z": "134517ea29179e1f",
+        "name": "filter variable",
+        "property": "payload.variablename",
+        "propertyType": "msg",
+        "rules": [
+            {
+                "t": "eq",
+                "v": "varfilter",
+                "vt": "env"
+            }
+        ],
+        "checkall": "true",
+        "repair": false,
+        "outputs": 1,
+        "x": 390,
+        "y": 120,
+        "wires": [
+            [
+                "74b78bc814195fe0"
+            ]
+        ]
+    },
+    {
+        "id": "74b78bc814195fe0",
+        "type": "function",
+        "z": "134517ea29179e1f",
+        "name": "define the .csv header ",
+        "func": "if(msg.payload.variabledata[0].y === undefined){\n    msg.payload.variabledata[0].x = 'timestamp' + \"_\" +  msg.payload.variablename;\n    msg.payload.variabledata[0].y = msg.payload.variablename;\n    return msg;\n}else{\n    return msg;\n}\n",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 660,
+        "y": 120,
+        "wires": [
+            [
+                "30c6c47d5efdac48"
+            ]
+        ]
+    },
+    {
+        "id": "7e9c50ed.2ab67",
+        "type": "subflow",
+        "name": "Group variables in a .csv file",
+        "info": "",
+        "category": "STMicroelectronics",
+        "in": [
+            {
+                "x": 60,
+                "y": 80,
+                "wires": [
+                    {
+                        "id": "c7f149ae.894818"
+                    }
+                ]
+            }
+        ],
+        "out": [
+            {
+                "x": 840,
+                "y": 360,
+                "wires": [
+                    {
+                        "id": "802c75f2.9f7898",
+                        "port": 0
+                    }
+                ]
+            }
+        ],
+        "env": [
+            {
+                "name": "nbVar",
+                "type": "num",
+                "value": "",
+                "ui": {
+                    "icon": "font-awesome/fa-cogs",
+                    "label": {
+                        "en-US": "Number of Variables"
+                    },
+                    "type": "input",
+                    "opts": {
+                        "types": [
+                            "num"
+                        ]
+                    }
+                }
+            },
+            {
+                "name": "delete_time",
+                "type": "bool",
+                "value": "false",
+                "ui": {
+                    "icon": "font-awesome/fa-clock-o",
+                    "label": {
+                        "en-US": "Single Time"
+                    },
+                    "type": "input",
+                    "opts": {
+                        "types": [
+                            "bool"
+                        ]
+                    }
+                }
+            }
+        ],
+        "color": "#3CB4E6",
+        "icon": "node-red/join.svg"
+    },
+    {
+        "id": "7b54efc3.0009e",
+        "type": "function",
+        "z": "7e9c50ed.2ab67",
+        "name": "Associate values with same timestamp",
+        "func": "let i = 0;\nlet j = 0;\nlet n = 0;\nlet msg1; \nlet msgArray = new Array();\nlet nbVar = msg.payload.length;\n\nfor(i = 0; i < nbVar; i++){\n    \n    let underArrayLength = msg.payload[i].length;\n    \n    for(j = 0; j < underArrayLength; j++){\n            \n            for(n = 0; n < nbVar; n++){\n                msg1 = msg.payload[n][j];\n                msgArray.push(msg1);\n            }\n    }\n    msg.payload = msgArray;\n    return msg;\n}",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 650,
+        "y": 80,
+        "wires": [
+            [
+                "b3b24fdd.b01b9"
+            ]
+        ]
+    },
+    {
+        "id": "b3b24fdd.b01b9",
+        "type": "split",
+        "z": "7e9c50ed.2ab67",
+        "name": "",
+        "splt": "\\n",
+        "spltType": "str",
+        "arraySplt": "${nbVar}",
+        "arraySpltType": "len",
+        "stream": false,
+        "addname": "",
+        "x": 870,
+        "y": 80,
+        "wires": [
+            [
+                "cf754130.7de2a"
+            ]
+        ]
+    },
+    {
+        "id": "ca91d405.238ea8",
+        "type": "function",
+        "z": "7e9c50ed.2ab67",
+        "name": "Format data",
+        "func": "let output=\"\";\n\nif(typeof msg.payload == 'number') {\n    output = msg.payload;\n    \n}else if(typeof msg.payload == 'string'){\n    output = msg.payload;\n}else{\n    output = msg.payload.x + \";\"+ msg.payload.y;\n}\n\nmsg.payload = output ;\n\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 790,
+        "y": 200,
+        "wires": [
+            [
+                "802c75f2.9f7898"
+            ]
+        ]
+    },
+    {
+        "id": "802c75f2.9f7898",
+        "type": "join",
+        "z": "7e9c50ed.2ab67",
+        "name": "Join consecutive messages from the number of monitored variables",
+        "mode": "custom",
+        "build": "string",
+        "property": "payload",
+        "propertyType": "msg",
+        "key": "topic",
+        "joiner": ";",
+        "joinerType": "str",
+        "accumulate": false,
+        "timeout": "",
+        "count": "${nbVar}",
+        "reduceRight": false,
+        "reduceExp": "",
+        "reduceInit": "",
+        "reduceInitType": "",
+        "reduceFixup": "",
+        "x": 380,
+        "y": 360,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "c7f149ae.894818",
+        "type": "join",
+        "z": "7e9c50ed.2ab67",
+        "name": "Join [nbVar] consecutives messages",
+        "mode": "custom",
+        "build": "array",
+        "property": "payload",
+        "propertyType": "msg",
+        "key": "topic",
+        "joiner": ";",
+        "joinerType": "str",
+        "accumulate": false,
+        "timeout": "",
+        "count": "${nbVar}",
+        "reduceRight": false,
+        "reduceExp": "",
+        "reduceInit": "",
+        "reduceInitType": "num",
+        "reduceFixup": "",
+        "x": 290,
+        "y": 80,
+        "wires": [
+            [
+                "7b54efc3.0009e"
+            ]
+        ]
+    },
+    {
+        "id": "cf754130.7de2a",
+        "type": "function",
+        "z": "7e9c50ed.2ab67",
+        "name": "Delete duplicate timestamps if user wants",
+        "func": "let i;\nlet delDup = env.get(\"delete_time\");\nlet nbVar = env.get(\"nbVar\");\nlet msgArray = new Array();\n\nif(delDup === false){\n    return msg;\n}else{\n    \n    msgArray.push(msg.payload[0]);\n    \n    for(i=1; i < nbVar; i++){\n        \n        msgArray.push(msg.payload[i].y);\n        \n    }\n    \n    msg.payload = msgArray;\n    return msg;\n    \n}\n\n\n",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 260,
+        "y": 200,
+        "wires": [
+            [
+                "91613227.a8eb8"
+            ]
+        ]
+    },
+    {
+        "id": "91613227.a8eb8",
+        "type": "split",
+        "z": "7e9c50ed.2ab67",
+        "name": "",
+        "splt": "\\n",
+        "spltType": "str",
+        "arraySplt": "1",
+        "arraySpltType": "len",
+        "stream": false,
+        "addname": "",
+        "x": 570,
+        "y": 200,
+        "wires": [
+            [
+                "ca91d405.238ea8"
+            ]
+        ]
+    },
+    {
+        "id": "7c3b29d7c918aab3",
+        "type": "tab",
+        "label": "Create .csv log file",
+        "disabled": false,
+        "info": ""
+    },
+    {
+        "id": "c51a3adbfbb0b992",
+        "type": "ui_chartst",
+        "z": "7c3b29d7c918aab3",
+        "group": "1b8f9f84.b59fb",
+        "name": "myChart",
+        "order": 4,
+        "width": 15,
+        "height": 9,
+        "chartType": "line",
+        "curveType": "linear",
+        "duration": "10",
+        "ymin": "",
+        "ymax": "",
+        "x": 300,
+        "y": 240,
+        "wires": []
+    },
+    {
+        "id": "998a15e67dc4503e",
+        "type": "acquisition out",
+        "z": "7c3b29d7c918aab3",
+        "name": "myProbe_Out",
+        "probeconfig": "c73ae8b7b36319cf",
+        "x": 820,
+        "y": 100,
+        "wires": []
+    },
+    {
+        "id": "c4801fc820cbea45",
+        "type": "acquisition in",
+        "z": "7c3b29d7c918aab3",
+        "name": "myProbe_In",
+        "probeconfig": "c73ae8b7b36319cf",
+        "x": 90,
+        "y": 340,
+        "wires": [
+            [
+                "5c77d7e788019f87"
+            ],
+            []
+        ]
+    },
+    {
+        "id": "07d83aab55c50886",
+        "type": "ui_button",
+        "z": "7c3b29d7c918aab3",
+        "name": "",
+        "group": "1b8f9f84.b59fb",
+        "order": 3,
+        "width": 5,
+        "height": 1,
+        "passthru": false,
+        "label": "Clear Graphs",
+        "tooltip": "",
+        "color": "",
+        "bgcolor": "",
+        "icon": "",
+        "payload": "",
+        "payloadType": "str",
+        "topic": "clear",
+        "x": 110,
+        "y": 240,
+        "wires": [
+            [
+                "c51a3adbfbb0b992"
+            ]
+        ]
+    },
+    {
+        "id": "c2d446f2289d19cc",
+        "type": "ui_button",
+        "z": "7c3b29d7c918aab3",
+        "name": "",
+        "group": "1b8f9f84.b59fb",
+        "order": 1,
+        "width": 5,
+        "height": 1,
+        "passthru": false,
+        "label": "START Acquisition",
+        "tooltip": "",
+        "color": "",
+        "bgcolor": "",
+        "icon": "",
+        "payload": "",
+        "payloadType": "str",
+        "topic": "start",
+        "x": 390,
+        "y": 60,
+        "wires": [
+            [
+                "ca8f2ffb6fabaf63"
+            ]
+        ]
+    },
+    {
+        "id": "78b5b4bc7835495d",
+        "type": "ui_button",
+        "z": "7c3b29d7c918aab3",
+        "name": "",
+        "group": "1b8f9f84.b59fb",
+        "order": 2,
+        "width": 5,
+        "height": 1,
+        "passthru": true,
+        "label": "STOP Acquisition",
+        "tooltip": "",
+        "color": "",
+        "bgcolor": "",
+        "icon": "",
+        "payload": "",
+        "payloadType": "str",
+        "topic": "stop",
+        "x": 390,
+        "y": 140,
+        "wires": [
+            [
+                "ca8f2ffb6fabaf63"
+            ]
+        ]
+    },
+    {
+        "id": "5c77d7e788019f87",
+        "type": "processing",
+        "z": "7c3b29d7c918aab3",
+        "groupname": "MyVariables",
+        "groupid": "9767ad34.f46fd",
+        "expressions": [],
+        "statistics": [],
+        "logmode": "no",
+        "logformat": "stcm",
+        "x": 290,
+        "y": 340,
+        "wires": [
+            [
+                "c51a3adbfbb0b992",
+                "5c6d2c3077d1714d",
+                "5b3967a652d09286",
+                "f25802ddd1bb2383",
+                "1b7bedaa6d511b57",
+                "42ac34aaeadf0179"
+            ],
+            []
+        ]
+    },
+    {
+        "id": "135f75c9f1b2120d",
+        "type": "file",
+        "z": "7c3b29d7c918aab3",
+        "name": "",
+        "filename": "F:\\SAVE_MGR\\mgr.csv",
+        "filenameType": "str",
+        "appendNewline": true,
+        "createDir": false,
+        "overwriteFile": "false",
+        "encoding": "none",
+        "x": 1070,
+        "y": 360,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "56092b5a5f9d1cb2",
+        "type": "comment",
+        "z": "7c3b29d7c918aab3",
+        "name": "link the subflows in the .exe variables order",
+        "info": "",
+        "x": 500,
+        "y": 540,
+        "wires": []
+    },
+    {
+        "id": "c8b18e9601adf6d5",
+        "type": "comment",
+        "z": "7c3b29d7c918aab3",
+        "name": "Enter the number of variables connected",
+        "info": "",
+        "x": 780,
+        "y": 440,
+        "wires": []
+    },
+    {
+        "id": "c56e48db3daed897",
+        "type": "subflow:7e9c50ed.2ab67",
+        "z": "7c3b29d7c918aab3",
+        "name": "Group variables in a .csv file",
+        "env": [
+            {
+                "name": "nbVar",
+                "value": "5",
+                "type": "num"
+            }
+        ],
+        "x": 780,
+        "y": 360,
+        "wires": [
+            [
+                "135f75c9f1b2120d"
+            ]
+        ]
+    },
+    {
+        "id": "07094e84892abea4",
+        "type": "comment",
+        "z": "7c3b29d7c918aab3",
+        "name": "Enter absolute path of the file",
+        "info": "",
+        "x": 1080,
+        "y": 420,
+        "wires": []
+    },
+    {
+        "id": "ca8f2ffb6fabaf63",
+        "type": "variables",
+        "z": "7c3b29d7c918aab3",
+        "groupname": "MyVariables1",
+        "accesspoint": 0,
+        "execonfig": "04d1ca9ad9970d22",
+        "variablelist": [],
+        "triggerstartmode": "manual",
+        "triggername": "ADC_VAL[0]",
+        "triggerthreshold": "",
+        "frequency": "",
+        "frequencyType": "0",
+        "snapshotheader": "",
+        "mode": "direct",
+        "lastImportedTime": 1687695869327,
+        "openStatus": false,
+        "x": 640,
+        "y": 100,
+        "wires": [
+            [
+                "998a15e67dc4503e"
+            ],
+            []
+        ]
+    },
+    {
+        "id": "5c6d2c3077d1714d",
+        "type": "subflow:134517ea29179e1f",
+        "z": "7c3b29d7c918aab3",
+        "name": "RR_1",
+        "env": [
+            {
+                "name": "varfilter",
+                "value": "ADC_VAL[2]",
+                "type": "str"
+            }
+        ],
+        "x": 510,
+        "y": 360,
+        "wires": [
+            [
+                "c56e48db3daed897"
+            ]
+        ]
+    },
+    {
+        "id": "5b3967a652d09286",
+        "type": "subflow:134517ea29179e1f",
+        "z": "7c3b29d7c918aab3",
+        "name": "RR_2",
+        "env": [
+            {
+                "name": "varfilter",
+                "value": "ADC_VAL[3]",
+                "type": "str"
+            }
+        ],
+        "x": 510,
+        "y": 420,
+        "wires": [
+            [
+                "c56e48db3daed897"
+            ]
+        ]
+    },
+    {
+        "id": "f25802ddd1bb2383",
+        "type": "subflow:134517ea29179e1f",
+        "z": "7c3b29d7c918aab3",
+        "name": "RR_3",
+        "env": [
+            {
+                "name": "varfilter",
+                "value": "ADC_VAL[4]",
+                "type": "str"
+            }
+        ],
+        "x": 510,
+        "y": 480,
+        "wires": [
+            [
+                "c56e48db3daed897"
+            ]
+        ]
+    },
+    {
+        "id": "42ac34aaeadf0179",
+        "type": "subflow:134517ea29179e1f",
+        "z": "7c3b29d7c918aab3",
+        "name": "EDA",
+        "env": [
+            {
+                "name": "varfilter",
+                "value": "ADC_VAL[0]",
+                "type": "str"
+            }
+        ],
+        "x": 510,
+        "y": 240,
+        "wires": [
+            [
+                "c56e48db3daed897"
+            ]
+        ]
+    },
+    {
+        "id": "1b7bedaa6d511b57",
+        "type": "subflow:134517ea29179e1f",
+        "z": "7c3b29d7c918aab3",
+        "name": "ECG",
+        "env": [
+            {
+                "name": "varfilter",
+                "value": "ADC_VAL[1]",
+                "type": "str"
+            }
+        ],
+        "x": 510,
+        "y": 300,
+        "wires": [
+            [
+                "c56e48db3daed897"
+            ]
+        ]
+    },
+    {
+        "id": "1b8f9f84.b59fb",
+        "type": "ui_group",
+        "name": "Chart",
+        "tab": "e4a22138.efd5b",
+        "order": 1,
+        "disp": true,
+        "width": "15",
+        "collapse": false,
+        "className": ""
+    },
+    {
+        "id": "c73ae8b7b36319cf",
+        "type": "probe",
+        "probeid": "066BFF525157878367082736",
+        "probename": "ST-Link v2-1B 066BFF525157878367082736",
+        "protocol": "SWD",
+        "frequency": "1.8 MHz - Default",
+        "probeproperty": "{\"SWD\":[\"4.6 MHz\",\"1.8 MHz - Default\",\"950 kHz\",\"400 kHz\",\"150 kHz\"],\"JTAG\":[\"18 MHz\",\"9 MHz\",\"4.5 MHz\",\"2.25 MHz\",\"1.12 MHz - Default\",\"560 kHz\",\"280 kHz\",\"140 kHz\"]}",
+        "probeversion": "ST Link firmware version V2.J41",
+        "connectionType": "p2p",
+        "nickname": ""
+    },
+    {
+        "id": "04d1ca9ad9970d22",
+        "type": "exe-config",
+        "name": "Signals",
+        "exefile": "E:\\STM32\\CubeIDE\\Projekty\\Miganie f4\\Debug\\Miganie f4.elf",
+        "exefolder": "E:\\STM32\\CubeIDE\\Projekty\\Miganie f4\\Debug",
+        "exevariablelist": [
+            {
+                "address": "0x200000fc",
+                "name": "ADC_VAL[0]",
+                "type": 3,
+                "checked": true
+            },
+            {
+                "address": "0x200000fe",
+                "name": "ADC_VAL[1]",
+                "type": 3,
+                "checked": true
+            },
+            {
+                "address": "0x20000100",
+                "name": "ADC_VAL[2]",
+                "type": 3,
+                "checked": true
+            },
+            {
+                "address": "0x20000102",
+                "name": "ADC_VAL[3]",
+                "type": 3,
+                "checked": true
+            },
+            {
+                "address": "0x20000104",
+                "name": "ADC_VAL[4]",
+                "type": 3,
+                "checked": true
+            },
+            {
+                "address": "0x080037b0",
+                "name": "AHBPrescTable[0]",
+                "type": 1
+            },
+            {
+                "address": "0x080037ba",
+                "name": "AHBPrescTable[10]",
+                "type": 1
+            },
+            {
+                "address": "0x080037bb",
+                "name": "AHBPrescTable[11]",
+                "type": 1
+            },
+            {
+                "address": "0x080037bc",
+                "name": "AHBPrescTable[12]",
+                "type": 1
+            },
+            {
+                "address": "0x080037bd",
+                "name": "AHBPrescTable[13]",
+                "type": 1
+            },
+            {
+                "address": "0x080037be",
+                "name": "AHBPrescTable[14]",
+                "type": 1
+            },
+            {
+                "address": "0x080037bf",
+                "name": "AHBPrescTable[15]",
+                "type": 1
+            },
+            {
+                "address": "0x080037b1",
+                "name": "AHBPrescTable[1]",
+                "type": 1
+            },
+            {
+                "address": "0x080037b2",
+                "name": "AHBPrescTable[2]",
+                "type": 1
+            },
+            {
+                "address": "0x080037b3",
+                "name": "AHBPrescTable[3]",
+                "type": 1
+            },
+            {
+                "address": "0x080037b4",
+                "name": "AHBPrescTable[4]",
+                "type": 1
+            },
+            {
+                "address": "0x080037b5",
+                "name": "AHBPrescTable[5]",
+                "type": 1
+            },
+            {
+                "address": "0x080037b6",
+                "name": "AHBPrescTable[6]",
+                "type": 1
+            },
+            {
+                "address": "0x080037b7",
+                "name": "AHBPrescTable[7]",
+                "type": 1
+            },
+            {
+                "address": "0x080037b8",
+                "name": "AHBPrescTable[8]",
+                "type": 1
+            },
+            {
+                "address": "0x080037b9",
+                "name": "AHBPrescTable[9]",
+                "type": 1
+            },
+            {
+                "address": "0x080037c0",
+                "name": "APBPrescTable[0]",
+                "type": 1
+            },
+            {
+                "address": "0x080037c1",
+                "name": "APBPrescTable[1]",
+                "type": 1
+            },
+            {
+                "address": "0x080037c2",
+                "name": "APBPrescTable[2]",
+                "type": 1
+            },
+            {
+                "address": "0x080037c3",
+                "name": "APBPrescTable[3]",
+                "type": 1
+            },
+            {
+                "address": "0x080037c4",
+                "name": "APBPrescTable[4]",
+                "type": 1
+            },
+            {
+                "address": "0x080037c5",
+                "name": "APBPrescTable[5]",
+                "type": 1
+            },
+            {
+                "address": "0x080037c6",
+                "name": "APBPrescTable[6]",
+                "type": 1
+            },
+            {
+                "address": "0x080037c7",
+                "name": "APBPrescTable[7]",
+                "type": 1
+            },
+            {
+                "address": "0x20000060",
+                "name": "hadc1.DMA_Handle",
+                "type": 5
+            },
+            {
+                "address": "0x2000006c",
+                "name": "hadc1.ErrorCode",
+                "type": 5
+            },
+            {
+                "address": "0x2000002c",
+                "name": "hadc1.Init.ClockPrescaler",
+                "type": 5
+            },
+            {
+                "address": "0x20000040",
+                "name": "hadc1.Init.ContinuousConvMode",
+                "type": 2
+            },
+            {
+                "address": "0x20000034",
+                "name": "hadc1.Init.DataAlign",
+                "type": 5
+            },
+            {
+                "address": "0x20000048",
+                "name": "hadc1.Init.DiscontinuousConvMode",
+                "type": 2
+            },
+            {
+                "address": "0x20000058",
+                "name": "hadc1.Init.DMAContinuousRequests",
+                "type": 2
+            },
+            {
+                "address": "0x2000003c",
+                "name": "hadc1.Init.EOCSelection",
+                "type": 5
+            },
+            {
+                "address": "0x20000050",
+                "name": "hadc1.Init.ExternalTrigConv",
+                "type": 5
+            },
+            {
+                "address": "0x20000054",
+                "name": "hadc1.Init.ExternalTrigConvEdge",
+                "type": 5
+            },
+            {
+                "address": "0x20000044",
+                "name": "hadc1.Init.NbrOfConversion",
+                "type": 5
+            },
+            {
+                "address": "0x2000004c",
+                "name": "hadc1.Init.NbrOfDiscConversion",
+                "type": 5
+            },
+            {
+                "address": "0x20000030",
+                "name": "hadc1.Init.Resolution",
+                "type": 5
+            },
+            {
+                "address": "0x20000038",
+                "name": "hadc1.Init.ScanConvMode",
+                "type": 5
+            },
+            {
+                "address": "0x20000028",
+                "name": "hadc1.Instance",
+                "type": 5
+            },
+            {
+                "address": "0x20000064",
+                "name": "hadc1.Lock",
+                "type": 2
+            },
+            {
+                "address": "0x2000005c",
+                "name": "hadc1.NbrOfCurrentConversionRank",
+                "type": 5
+            },
+            {
+                "address": "0x20000068",
+                "name": "hadc1.State",
+                "type": 5
+            },
+            {
+                "address": "0x2000008c",
+                "name": "htim2.Channel",
+                "type": 2
+            },
+            {
+                "address": "0x200000b2",
+                "name": "htim2.ChannelNState[0]",
+                "type": 2
+            },
+            {
+                "address": "0x200000b3",
+                "name": "htim2.ChannelNState[1]",
+                "type": 2
+            },
+            {
+                "address": "0x200000b4",
+                "name": "htim2.ChannelNState[2]",
+                "type": 2
+            },
+            {
+                "address": "0x200000b5",
+                "name": "htim2.ChannelNState[3]",
+                "type": 2
+            },
+            {
+                "address": "0x200000ae",
+                "name": "htim2.ChannelState[0]",
+                "type": 2
+            },
+            {
+                "address": "0x200000af",
+                "name": "htim2.ChannelState[1]",
+                "type": 2
+            },
+            {
+                "address": "0x200000b0",
+                "name": "htim2.ChannelState[2]",
+                "type": 2
+            },
+            {
+                "address": "0x200000b1",
+                "name": "htim2.ChannelState[3]",
+                "type": 2
+            },
+            {
+                "address": "0x200000b6",
+                "name": "htim2.DMABurstState",
+                "type": 2
+            },
+            {
+                "address": "0x20000090",
+                "name": "htim2.hdma[0]",
+                "type": 5
+            },
+            {
+                "address": "0x20000094",
+                "name": "htim2.hdma[1]",
+                "type": 5
+            },
+            {
+                "address": "0x20000098",
+                "name": "htim2.hdma[2]",
+                "type": 5
+            },
+            {
+                "address": "0x2000009c",
+                "name": "htim2.hdma[3]",
+                "type": 5
+            },
+            {
+                "address": "0x200000a0",
+                "name": "htim2.hdma[4]",
+                "type": 5
+            },
+            {
+                "address": "0x200000a4",
+                "name": "htim2.hdma[5]",
+                "type": 5
+            },
+            {
+                "address": "0x200000a8",
+                "name": "htim2.hdma[6]",
+                "type": 5
+            },
+            {
+                "address": "0x20000088",
+                "name": "htim2.Init.AutoReloadPreload",
+                "type": 5
+            },
+            {
+                "address": "0x20000080",
+                "name": "htim2.Init.ClockDivision",
+                "type": 5
+            },
+            {
+                "address": "0x20000078",
+                "name": "htim2.Init.CounterMode",
+                "type": 5
+            },
+            {
+                "address": "0x2000007c",
+                "name": "htim2.Init.Period",
+                "type": 5
+            },
+            {
+                "address": "0x20000074",
+                "name": "htim2.Init.Prescaler",
+                "type": 5
+            },
+            {
+                "address": "0x20000084",
+                "name": "htim2.Init.RepetitionCounter",
+                "type": 5
+            },
+            {
+                "address": "0x20000070",
+                "name": "htim2.Instance",
+                "type": 5
+            },
+            {
+                "address": "0x200000ac",
+                "name": "htim2.Lock",
+                "type": 2
+            },
+            {
+                "address": "0x200000ad",
+                "name": "htim2.State",
+                "type": 2
+            },
+            {
+                "address": "0x200000f8",
+                "name": "huart2.ErrorCode",
+                "type": 5
+            },
+            {
+                "address": "0x200000f5",
+                "name": "huart2.gState",
+                "type": 2
+            },
+            {
+                "address": "0x200000f0",
+                "name": "huart2.hdmarx",
+                "type": 5
+            },
+            {
+                "address": "0x200000ec",
+                "name": "huart2.hdmatx",
+                "type": 5
+            },
+            {
+                "address": "0x200000bc",
+                "name": "huart2.Init.BaudRate",
+                "type": 5
+            },
+            {
+                "address": "0x200000d0",
+                "name": "huart2.Init.HwFlowCtl",
+                "type": 5
+            },
+            {
+                "address": "0x200000cc",
+                "name": "huart2.Init.Mode",
+                "type": 5
+            },
+            {
+                "address": "0x200000d4",
+                "name": "huart2.Init.OverSampling",
+                "type": 5
+            },
+            {
+                "address": "0x200000c8",
+                "name": "huart2.Init.Parity",
+                "type": 5
+            },
+            {
+                "address": "0x200000c4",
+                "name": "huart2.Init.StopBits",
+                "type": 5
+            },
+            {
+                "address": "0x200000c0",
+                "name": "huart2.Init.WordLength",
+                "type": 5
+            },
+            {
+                "address": "0x200000b8",
+                "name": "huart2.Instance",
+                "type": 5
+            },
+            {
+                "address": "0x200000f4",
+                "name": "huart2.Lock",
+                "type": 2
+            },
+            {
+                "address": "0x200000e0",
+                "name": "huart2.pRxBuffPtr",
+                "type": 5
+            },
+            {
+                "address": "0x200000d8",
+                "name": "huart2.pTxBuffPtr",
+                "type": 5
+            },
+            {
+                "address": "0x200000e8",
+                "name": "huart2.ReceptionType",
+                "type": 5
+            },
+            {
+                "address": "0x200000f6",
+                "name": "huart2.RxState",
+                "type": 2
+            },
+            {
+                "address": "0x200000e6",
+                "name": "huart2.RxXferCount",
+                "type": 3
+            },
+            {
+                "address": "0x200000e4",
+                "name": "huart2.RxXferSize",
+                "type": 3
+            },
+            {
+                "address": "0x200000de",
+                "name": "huart2.TxXferCount",
+                "type": 3
+            },
+            {
+                "address": "0x200000dc",
+                "name": "huart2.TxXferSize",
+                "type": 3
+            },
+            {
+                "address": "0x20000000",
+                "name": "SystemCoreClock",
+                "type": 5
+            },
+            {
+                "address": "0x20000108",
+                "name": "uwTick",
+                "type": 5
+            },
+            {
+                "address": "0x20000008",
+                "name": "uwTickFreq",
+                "type": 2
+            },
+            {
+                "address": "0x20000004",
+                "name": "uwTickPrio",
+                "type": 5
+            }
+        ],
+        "expand": true,
+        "filename": "Miganie f4.elf",
+        "exeModifiedTime": 1684183785826,
+        "configLastUpdate": 1687524358294
+    },
+    {
+        "id": "e4a22138.efd5b",
+        "type": "ui_tab",
+        "name": "Home",
+        "icon": "dashboard",
+        "disabled": false,
+        "hidden": false
+    }
+]
