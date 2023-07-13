@@ -9,5 +9,9 @@ clc;
 file_path = 'data.mat';
 
 % Obliczanie wektora cech dla kazdej dlugosci fali
-SignalToFeatures = SignalToFeatures(file_path);
+SignalOneFeatures = SignalOneFeatures(file_path);
+SignalTwoFeatures = SignalTwoFeatures(file_path);
+SignalThreeFeatures = SignalThreeFeatures(file_path);
+SignalFourFeatures = SignalFourFeatures(file_path);
+SignalFiveFeatures = SignalFiveFeatures(file_path);
 

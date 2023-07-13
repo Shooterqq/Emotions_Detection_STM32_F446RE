@@ -11,7 +11,7 @@ load('matlab.mat');
 load('LPF_EDA.mat');
 
 % Inicjalizacja struktury
-data = struct('signal1', {}, 'signal2', {}, 'signal3', {}, 'signal4', {}, 'signal5', {}, 'age', {}, 'height', {}, 'weight', {}, 'gender', {});
+data = struct();
 
 % Ścieżka do folderu z plikami CSV
 folder = 'Signals';
@@ -26,12 +26,14 @@ for i = 1:numel(files)
         file_data = dlmread(fullfile(folder, files(i).name), ';', 1, 0);
         
         % Sprawdzenie rozmiaru pliku
-        if size(file_data, 2) == 14
+        if size(file_data, 2) == 16
             % Zapisanie danych do struktury
             data(i).signal1 = file_data(:, 2);
             data(i).signal1 = EDA_Filters(data(i).signal1);
             
             data(i).signal2 = file_data(:, 4);
+            orginalecg = data(i).signal2;
+            
             data(i).signal2 = MetodaFalkowa2(data(i).signal2);
             
             data(i).signal3 = file_data(:, 6);
@@ -47,6 +49,8 @@ for i = 1:numel(files)
             data(i).height = file_data(1, 12);
             data(i).weight = file_data(1, 13);
             data(i).gender = file_data(1, 14);
+            data(i).fs = file_data(1, 15);
+            data(i).emotion = file_data(1, 16);
             
         else
             fprintf('Nieprawidłowy format pliku: %s\n', files(i).name);
@@ -63,18 +67,19 @@ save("data.mat", "data");
 t = (0:length(data(1).signal2)-1) / fs;
 
 % Określenie zakresu czasu do wyświetlenia (od 70 do 90 sekundy)
-start_time = 550; % Sekundy
+start_time = 590; % Sekundy
 end_time = 600;   % Sekundy
 
 % Indeksowanie fragmentu sygnału w wybranym zakresie czasu
 idx = (t >= start_time) & (t <= end_time);
 t_subset = t(idx);
 output_LPF_subset = data(1).signal2(idx);
+orginalecg = orginalecg(idx);
 
 % Narysowanie wykresu sygnału w wybranym zakresie czasu
  plot(t_subset, output_LPF_subset);
  hold on;
-% plot(t_subset, output_LPF_subset22);
+ plot(t_subset, orginalecg);
 
 % Ustawienie etykiety dla osi x
 xlabel('Czas [s]');
