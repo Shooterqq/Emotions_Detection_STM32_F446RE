@@ -1,286 +1,157 @@
-% Function to feature signal
+% Function to feature EDA signal
 
 function SignalOneFeatures = SignalOneFeatures(file_path)
 
-fs = 1000;
-Tp = 1/fs;
+%% ----- Wczytanie sygnału do analizy oraz deklaracja zmiennych ----- %%
 
-SignalOneFeatures = [];
-EmotionVector = [];
+fs = 1000;
+Features_EDA = [];
 
 data = load(file_path);
-
 data = data.data;
+
+
+%% ----- Analiza sygnałów EDA dla każdej z emocji ----- %%
+
 
 for signal_idx = 1:length(data) % wczytywanie po sygnale do analizy
     signal = data(signal_idx); % przypisanie sygnalu do zmiennej
+    signal.signal1  = signal.signal1(100:end); % Usunięcie zakłóconego fragmentu sygnału przez filtr LPF
     
+    normalized_signal = zscore(signal.signal1); % Normalizacja sygnał EDA (zalecane)
     
-    t = (0:length(data(1).signal2)-1) / fs;
+    %% ----- Separacja sygnału na składową toniczną i fazową ----- %%
     
-    window_len_s = 10; % czas okna w s
-    window_len_samples = window_len_s * fs;
-    overlapp_percent = 50; % proc nakładania sie okien
+    % Ustalenie parametrów dla funkcji cvxEDA
+    tau0 = 1.2;       % slow time constant of the Bateman function
+    tau1 = 0.01;       % fast time constant of the Bateman function
+    delta_knot = 2.97;  % time between knots of the tonic spline function
+    alpha = 0.005;   % penalization for the sparse SMNA driver
+    gamma = 0.1;     % penalization for the tonic spline coefficients
+    solver = 'quadprog'; % sparse QP solver to be used, 'quadprog' or 'sedumi'
     
-    [windows, ~] = buffer(signal.signal1, window_len_samples, floor(window_len_samples * overlapp_percent / 100), 'nodelay'); % podzielenie sygnalu na okna
-    [~, windows_count] = size(windows); %wyznaczenie ilosci okien z sygnału
+    % Wywołanie funkcji cvxEDA do analizy sygnału
+    [r, p, t, l, d, e, obj] = cvxEDA(normalized_signal, 1/fs, tau0, tau1, delta_knot, alpha, gamma, solver);
     
+    %% --------------------- Ekstrakcja cech --------------------- %%
     
-        % zdefiniowanie zmiennych do przechowywania parametrow
-    means = [];
-    stds = [];
-    skewness = [];
-    medians = [];
-    PTP_kurtosis = [];
-    kurtosis = [];
-    HeartRate = [];
-    ktEnergy = [];
-    ppgktEnergy320 = [];
-    logEnergy = [];
-    LogE_IRQ = [];
-    LogE_mean = [];
-    LogE_var = [];
-    AR5 = [];
-    AR5_2 = [];
-    ppgFFT = [];
-    ppgPSD = [];
-    SpectralEntr = [];
-    PPAmad = [];
-    td = [];
-    PX = [];
-    SE = [];
-    Q_25 = [];
-    Q_50 = [];
+    % Znalezienie maksimów sygnału fazowego o zadanej szerokości szczytu
+    [peaks, locs] = findpeaks(r,fs,'MinPeakWidth',0.2);
     
+    % Obliczenie wartości średnich składowej tonicznej i fazowej
+    mean_t = mean(t);
+    mean_r = mean(r);
     
-     for i = 1:windows_count
-        window = windows(:,i);
-        t1 = (0:Tp:(length(window) - 1) * Tp); % zmienna pomocnicza
-        m = mean(window);   % średnia
-        s = std(window);    % odchylenie standardowe
-        skew = sum((window - m).^3) / ((length(window)-1) * s^3); % skośność
-        med = median(window); % mediana
-        kurt = sum((window - m).^4) / ((length(window)-1) * s^4) - 3; % kurtoza
-        [peaks,locs] = findpeaks(window,'MinPeakDistance',round(fs*0.7)); % Obliczanie tętna sygnału PPG
+    % Obliczenie ilości maksimów powyżej ustalonego progu detekcji (0.2)
+    peak_tab = 0;
+    
+    for peakses = 1:length(peaks)
+        peak = peaks(peakses);
         
-        mptp = mean(peaks);% srednia wartosci szczytowych
-        PTP_kurt = sum((peaks - mptp).^4) / ((length(peaks)-1) * std(peaks).^4); % kurtoza wartosci szczytowych
+        threshold = 1; % Ustalony prog detekcji maksimów
         
-        % przypisywanie wartosci parametrow do zmiennych tymczasowych
-        means = [means, m];
-        stds = [stds, s];
-        skewness = [skewness, skew];
-        medians = [medians, med];
-        PTP_kurtosis = [PTP_kurtosis, PTP_kurt];
-        HeartRate = [length(peaks)*60/(window_len_samples/fs), HeartRate]; % Obliczanie pulsu za pomocą funkcji findpeaks
-        kurtosis = [kurtosis, kurt];
-        medpeaks = median(peaks);
-        
-        % Średnie Bezwzględne Odchylenie (MAD) amplitud od szczytu do szczytu (PPA)
-        mad = (1/length(peaks)) * sum(abs(peaks - medpeaks));
-        PPAmad = [PPAmad,(1/length(peaks)) * sum(abs(peaks - medpeaks))];
-        
-        % standard deviation of peak-to-peak amplitudes
-        ptp = sqrt((1/length(peaks))*sum((peaks - mptp).^2));
-        % sigma = sqrt((1/length(peaks))*(sum((x - mu).^2)));
-        
-        td = [td, ptp];
-        
-        % kwantyle okna
-        Q_25 = [Q_25, quantile(window, 0.25)];
-        Q_50 = [Q_50, quantile(window, 0.50)];
-        
-         % Obliczenie Kaiser Teager Energy sygnału PPG dla każdego okna
-        windowKTEnergy = zeros(size(window));
-        for j = 2:length(window)-1
-            windowKTEnergy(j) = window(j)^2 - window(j-1)*window(j+1);
-        end
-        ktEnergy = [ktEnergy, sum(windowKTEnergy)];
-        ppgktEnergy320 = [ppgktEnergy320, windowKTEnergy];
-        % obliczenie wartości energii logarytmicznej dla każdej ramki
-        logE = log(sum(window.^2));
-        
-        % Wartość średnia LogE
-        LogE_mean = [LogE_mean, mean(logE)];
-        
-        % wariancja LogE
-        LogE_var = [LogE_var, var(logE)];
-        
-        logEnergy = [logEnergy, logE];
-        
-        % Wsp. autoregresji 5 rzedow
-        p = 5; % stopień modelu AR
-        ppgAutoReg = aryule(window, p);
-        
-        AR5 = [AR5, ppgAutoReg'];
-        
-        % 2 sposob AR5
-        % obliczanie macierzy autokorelacji
-        
-        %normalized_signal = normalize(window, 'range', [-1 1]);
-        
-        r = zeros(1, p+1);
-        for AR = 0:p
+        if peak > threshold 
             
-            % można wybrać czy liczymy AR5 dla sygnalu czy KTE
+            peak_tab = peak_tab+1;
             
-            %r(AR+1) = sum(window(1:end-AR) .* window(AR+1:end));
-            r(AR+1) = sum(windowKTEnergy(1:end-AR) .* windowKTEnergy(AR+1:end));
-        end
-        
-        % tworzenie macierzy Toeplitza
-        R = zeros(p);
-        for T = 1:p
-            for P = 1:p
-                R(T, P) = r(abs(T-P)+1);
-            end
-        end
-        
-        % obliczanie wektora współczynników autoregresji
-        a = -inv(R)*r(2:end)';
-        
-        AR5_2 = [AR5_2 a(1:end)];
-        
-        % Obliczenie szybkiej jednostronnej transformaty fouriera
-        FFT = fft(window);
-        FFT =  FFT(1:round(length(window)/2)+1);
-        PSD = (1/(fs*length(FFT))) * abs(FFT).^2; % obliczenie rozkładu mocy sygnału
-        f = fs*(0:length(FFT)-1)/length(FFT); % Zdefiniowanie osi czestotliwosci
-        
-        frequencies = [1.19, 2.39, 4.78, 7.17, 11.96, 15.95, 19.93]; % Zadane częstotliwości (Desired frequencies)
-        
-        FFTval = zeros(size(frequencies)); % Inicjalizacja wektora na znalezione wartości (Initialize vector for found values)
-        
-        for i = 1:length(frequencies)
-            [~, index] = min(abs(f - frequencies(i))); % Znajdź indeks najbliższej wartości częstotliwości (Find the index of the nearest frequency value)
-            FFTval(i) = FFT(index); % Zapisz wartość FFT dla danej częstotliwości (Save the FFT value for the corresponding frequency)
-        end
-        
-        
-        for i = 1:length(frequencies)
-            [~, index] = min(abs(f - frequencies(i))); % Znajdź indeks najbliższej wartości częstotliwości
-            switch frequencies(i)
-                case 1.19
-                    FFT_1_19 = FFT(index);
-                case 2.39
-                    FFT_2_39 = FFT(index);
-                case 4.78
-                    FFT_4_78 = FFT(index);
-                case 7.17
-                    FFT_7_17 = FFT(index);
-                case 11.96
-                    FFT_11_96 = FFT(index);
-                case 15.95
-                    FFT_15_95 = FFT(index);
-                case 19.93
-                    FFT_19_93 = FFT(index);
-            end
-        end
-        
-        [values, indices] = findpeaks(PSD, 'SortStr', 'descend', 'NPeaks', 4);
-        
-        % rozproszenie położenia znalezionych maksimów
-        PSD_VarPeaks = var(values);
-        
-        % Moc względem położenia
-        power_ratio = sum(values.^2)/sum(indices.^2);
-        
-        weighted_average = sum(values .* indices.^2) / sum(indices.^2);
-        
-        
-        logPSD = abs(log(sum(PSD.^2)));
-        
-        % Znormalizowanie wartości logPSD
-        min_logPSD = 0;
-        max_logPSD = 40;
-        logPSD = (logPSD - min_logPSD) / (max_logPSD - min_logPSD);
-        
-        % Obliczanie centrum ciężkości widma
-        centroid = sum(f .* PSD) / sum(PSD);
-                
-        centroid_interpl = interp1(f, PSD, centroid, 'pchip');
-        
-        ppgFFT = [ppgFFT, FFT];
-        ppgPSD = [ppgPSD, PSD]; % widmowa gestosc mocy sygnalu
-        
-        RealFFT = real(FFT);
-        
-        
-        % Obliczanie entropii widmowej
-        
-%         for F = 1: length(FFT)
-%             Px = (abs(FFT(F))^2)/(sum(abs(FFT).^2));
-%             Se = -sum(Px * log(Px));
-%             %             p1 = [p1, Px(1,:)];
-%             %             p2 = [p2, Se(1,:)];
-%         end
-%         
-%         PX = [PX, Px];
-%         SE = [SE, Se];
-        
-        % Rozstęp międzykwantyrowy PSD (IQR)
-        % Sortowanie danych
-        sorted_data = sort(PSD);
-        
-        % Obliczenie mediany
-        median_value = median(PSD);
-        
-        % Podział danych na dwie połowy
-        first_half = sorted_data(sorted_data <= median_value);
-        second_half = sorted_data(sorted_data > median_value);
-        
-        % Obliczenie kwartyli Q1 i Q3
-        Q1 = median(first_half);
-        Q3 = median(second_half);
-        
-        IQR = Q3 - Q1;
-        LogE_IRQ = [LogE_IRQ, IQR];
-        
-        
-        % Normalizacja PSD do stworzenia dystrybucji prawdopodobieństwa
-        PSD_norm = PSD / sum(PSD);
-        
-        % Wyliczenie entropii widmowej
-        entropy = -sum(PSD_norm .* log2(PSD_norm + eps));
-        
-        %SE = -sum(PSD.*log2(PSD));
-        SpectralEntr = [SpectralEntr, entropy];
-        
-        KTEmean = mean(windowKTEnergy);
-        KTEvar = var(windowKTEnergy);
-        
-        LOGEmean = mean(logE);
-        LOGEvar = var(logE);
-        
-        FFTmean = mean(FFT);
-        FFTvar = var(FFT);
-        
-        PSDmean = mean(PSD);
-        PSDvar = var(PSD);
-        
-
-        
-        BMI = data(signal_idx).weight/(data(signal_idx).height^2);
-        AGE = data(signal_idx).age;
-        
-        % Znormalizowanie wartości wieku
-        min_age = 0;
-        max_age = 120;
-        AGE = (AGE - min_age) / (max_age - min_age);
-        
-        Gender = data(signal_idx).gender;
-        
-        % wypełnianie wektora krasyfikującego i referencyjnego
-        SignalOneFeatures = [SignalOneFeatures; KTEmean, KTEvar, PSDmean, PSDvar, var(SE), mean(SE), ptp, PTP_kurt, mptp, max(centroid_interpl), a(end,:), logPSD];
-        EmotionVector = [EmotionVector; data(signal_idx).emotion];
-        
-%         G1_FFT_ClasificationVectorPro = [G1_FFT_ClasificationVectorPro; FFT_1_19, FFT_2_39, FFT_4_78, FFT_7_17, FFT_11_96, FFT_15_95, FFT_19_93];
-
-     end      
+        end       
+    end
+    
+    signal_mins = length(signal.signal1)/(fs*60); % Obliczenie czasu sygnalu w minutach
+    
+    num_peaks = length(peaks); % Ilość znalezionych maksimów
+    peaks_per_min = num_peaks/signal_mins; % Obliczenie ilosci oddechów na minutę
+    
+    mean_peaks_amplitude = mean(peaks); % Średnia amplituda znalezionych maksimow
+    mean_peaks_amplitude_per_min =  mean_peaks_amplitude/signal_mins; % Średnia amplituda znalezionych maksimow na minutę
+    
+    std_peaks = std(peaks); % Odchylenie standardowe maksimów
+    std_peak_per_min = std_peaks/signal_mins; % Odchylenie standardowe maksimów na minutę
+    
+    kurt = sum((peaks - mean_peaks_amplitude).^4) / ((num_peaks-1) * std_peaks^4) - 3; % kurtoza maksimów
+    
+    high_peaks_per_min = peak_tab/signal_mins; % ilość maksimow powyzej ustalonego progu detekcji (threshold = 1) na minutę
+    
+    mean_r_per_min = mean_r/signal_mins; % Wartość srednia składowej fazowej na minutę
+    
+    % Tworzenie macierzy parametrów klasyfikujących
+    Features_EDA = [Features_EDA; peaks_per_min, high_peaks_per_min, ...
+        mean_peaks_amplitude_per_min, mean_r_per_min, ...
+        data(signal_idx).emotion, data(signal_idx).id];
+    
+    save("Features_EDA.mat", "Features_EDA");
+    
+    
+    %% ----- Podział sygnału na okna do analizy ----- %%
+    %
+    %
+    %     window_len_s = 5; % czas okna w s
+    %     window_len_samples = window_len_s * fs;
+    %     overlapp_percent = 50; % proc nakładania sie okien
+    %
+    %     [windows_SCL, ~] = buffer(t, window_len_samples, floor(window_len_samples * overlapp_percent / 100), 'nodelay'); % podzielenie sygnalu na okna
+    %
+    %     [windows_SCR, ~] = buffer(r, window_len_samples, floor(window_len_samples * overlapp_percent / 100), 'nodelay'); % podzielenie sygnalu na okna
+    %     [~, windows_count] = size(windows_SCR); %wyznaczenie ilosci okien z sygnału
+    %
+    %
+    %     %% ----- Analiza okien składowej fazowej ----- %%
+    %
+    %
+    %     for i = 1:windows_count
+    %         window = windows_SCR(:,i);
+    %
+    %         m = mean(window);   % średnia
+    %         s = std(window);    % odchylenie standardowe
+    %         skew = sum((window - m).^3) / ((length(window)-1) * s^3); % skośność
+    %         med = median(window); % mediana
+    %         kurt = sum((window - m).^4) / ((length(window)-1) * s^4) - 3; % kurtoza
+    %
+    %
+    %         % wypełnianie wektora klasyfikującego i referencyjnego
+    %         SCR_FEATURES = [SCR_FEATURES; m, s, skew, med, kurt];
+    %         EmotionVector_EDA = [EmotionVector_EDA; data(signal_idx).emotion];
+    %
+    %     end
+    %
+    %     save("SCR_FEATURES.mat", "SCR_FEATURES");
+    %     save("EmotionVector_EDA.mat", "EmotionVector_EDA");
+    %
+    %
+    %      %% ----- Analiza okien składowej tonicznej ----- %%
+    %
+    %
+    %     for i = 1:windows_count
+    %         window = windows_SCL(:,i);
+    %
+    %         m = mean(window);   % średnia
+    %         s = std(window);    % odchylenie standardowe
+    %         skew = sum((window - m).^3) / ((length(window)-1) * s^3); % skośność
+    %         med = median(window); % mediana
+    %         kurt = sum((window - m).^4) / ((length(window)-1) * s^4) - 3; % kurtoza
+    %
+    %
+    %         % wypełnianie wektora klasyfikującego
+    %         SCL_FEATURES = [SCL_FEATURES; m, s, skew, med, kurt];
+    %
+    %     end
+    %
+    %     save("SCL_FEATURES.mat", "SCL_FEATURES");
+    %
+    
 end
 
-save("SignalOneFeatures.mat", "SignalOneFeatures");
-save("EmotionVector.mat", "EmotionVector");
+SignalOneFeatures = Features_EDA;
 
 end
+
+
+
+
+
+
+
+
+
+
 

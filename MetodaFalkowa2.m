@@ -1,5 +1,5 @@
 function R = MetodaFalkowa2(ir)
-    wavelet = 'db4';    % Typ falki
+    wavelet = 'db1';    % Typ falki
     n = 12;
     D = [];
 
@@ -9,7 +9,7 @@ function R = MetodaFalkowa2(ir)
     end
 
     ir_dc = wrcoef('a', C, L, wavelet);
-    ir_ac = D(:, 7) + D(:, 8) + D(:, 9) + D(:, 10) + D(:, 11) + D(:, 12);
+    ir_ac = D(:, 8) + D(:, 9) + D(:, 10) + D(:, 11) + D(:, 12);
     
     % Zastosowanie filtru usredniającego w oknie o długości 5 próbek
     filtered_ir_ac = movmean(ir_ac, 15);

@@ -5,10 +5,6 @@ clc;
 fs = 1000;
 Tp = 1/fs;
 
-load('HPF_ECG.mat');
-load('LPF_ECG.mat');
-load('matlab.mat');
-load('LPF_EDA.mat');
 
 % Inicjalizacja struktury
 data = struct();
@@ -26,24 +22,26 @@ for i = 1:numel(files)
         file_data = dlmread(fullfile(folder, files(i).name), ';', 1, 0);
         
         % Sprawdzenie rozmiaru pliku
-        if size(file_data, 2) == 16
+        if size(file_data, 2) == 17
             % Zapisanie danych do struktury
             data(i).signal1 = file_data(:, 2);
             data(i).signal1 = EDA_Filters(data(i).signal1);
             
             data(i).signal2 = file_data(:, 4);
-            orginalecg = data(i).signal2;
-            
-            data(i).signal2 = MetodaFalkowa2(data(i).signal2);
+            data(i).signal2 = data(i).signal2;
             
             data(i).signal3 = file_data(:, 6);
+            data(i).signal6 = data(i).signal3; %%
+            
             data(i).signal3 = RESP_Filters(data(i).signal3);
+            
+
             
             data(i).signal4 = file_data(:, 8);
             data(i).signal4 = RESP_Filters(data(i).signal4);
             
-            data(i).signal5 = file_data(:, 10);
-            data(i).signal5 = RESP_Filters(data(i).signal5);
+            data(i).signal5 = RESP_Filters(file_data(:, 10));
+            data(i).signal5 = data(i).signal5;
             
             data(i).age = file_data(1, 11);
             data(i).height = file_data(1, 12);
@@ -51,6 +49,7 @@ for i = 1:numel(files)
             data(i).gender = file_data(1, 14);
             data(i).fs = file_data(1, 15);
             data(i).emotion = file_data(1, 16);
+            data(i).id = file_data(1, 17);
             
         else
             fprintf('Nieprawidłowy format pliku: %s\n', files(i).name);
@@ -63,33 +62,36 @@ end
 save("data.mat", "data");
 
 
-% Wygenerowanie wektora czasu dla całego sygnału
-t = (0:length(data(1).signal2)-1) / fs;
-
-% Określenie zakresu czasu do wyświetlenia (od 70 do 90 sekundy)
-start_time = 590; % Sekundy
-end_time = 600;   % Sekundy
-
-% Indeksowanie fragmentu sygnału w wybranym zakresie czasu
-idx = (t >= start_time) & (t <= end_time);
-t_subset = t(idx);
-output_LPF_subset = data(1).signal2(idx);
-orginalecg = orginalecg(idx);
-
-% Narysowanie wykresu sygnału w wybranym zakresie czasu
- plot(t_subset, output_LPF_subset);
- hold on;
- plot(t_subset, orginalecg);
-
-% Ustawienie etykiety dla osi x
-xlabel('Czas [s]');
-
-% Ustawienie etykiety dla osi y
-ylabel('Amplituda');
-
-% Dodanie tytułu wykresu
-title('Sygnał po filtrze LPF (od 70 s do 90 s)');
-
-
-
-
+% % Wygenerowanie wektora czasu dla całego sygnału
+% t = (0:length(data(4).signal2)-1) / fs;
+% 
+% % Określenie zakresu czasu do wyświetlenia (od 40 do 90 sekundy)
+% start_time = 50; % Sekundy
+% end_time = 80;   % Sekundy
+% 
+% % Indeksowanie fragmentu sygnału w wybranym zakresie czasu
+% idx = (t >= start_time) & (t <= end_time);
+% t_subset = t(idx);
+% output_LPF_subset = data(5).signal2(idx);
+% orginalecg_subset = data(5).signal6(idx);
+% 
+% % qw = data(2).signal2(idx);
+% % we = data(2).signal6(idx);
+% 
+% % Narysowanie wykresu sygnału w wybranym zakresie czasu
+% figure;
+% plot(t_subset, output_LPF_subset);
+% hold on;
+% plot(t_subset, orginalecg_subset);
+% 
+% % plot(t_subset, qw);
+% % plot(t_subset, we);
+% 
+% % Ustawienie etykiety dla osi x
+% xlabel('Czas [s]');
+% 
+% % Ustawienie etykiety dla osi y
+% ylabel('Amplituda');
+% 
+% % Dodanie tytułu wykresu
+% title('Sygnał po filtracji (od 70 s do 80 s)');
