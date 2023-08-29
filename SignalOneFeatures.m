@@ -60,7 +60,7 @@ for signal_idx = 1:length(data) % wczytywanie po sygnale do analizy
     signal_mins = length(signal.signal1)/(fs*60); % Obliczenie czasu sygnalu w minutach
     
     num_peaks = length(peaks); % Ilość znalezionych maksimów
-    peaks_per_min = num_peaks/signal_mins; % Obliczenie ilosci oddechów na minutę
+    peaks_per_min = num_peaks/signal_mins; % Obliczenie ilosci reakcji EDA na minutę
     
     mean_peaks_amplitude = mean(peaks); % Średnia amplituda znalezionych maksimow
     mean_peaks_amplitude_per_min =  mean_peaks_amplitude/signal_mins; % Średnia amplituda znalezionych maksimow na minutę
@@ -77,7 +77,7 @@ for signal_idx = 1:length(data) % wczytywanie po sygnale do analizy
     % Tworzenie macierzy parametrów klasyfikujących
     Features_EDA = [Features_EDA; peaks_per_min, high_peaks_per_min, ...
         mean_peaks_amplitude_per_min, mean_r_per_min, ...
-        data(signal_idx).emotion, data(signal_idx).id];
+        data(signal_idx).emotion];
     
     save("Features_EDA.mat", "Features_EDA");
     

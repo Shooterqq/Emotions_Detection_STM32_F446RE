@@ -70,12 +70,23 @@ for signal_idx = 1:length(data) % wczytywanie po sygnale do analizy
     RR50_count = sum(abs(RR_diff) > 50);
     pRR50 = (RR50_count / length(RR_diff)) * 100;
     
+    % Mediana z szczytów
+    medpeaks = median(Rpeaks);
+    
+    % Obliczenie Średnie Bezwzględne Odchylenie (MAD) amplitud od szczytu do szczytu (PPA)
+    PPAmad = (1/length(Rpeaks)) * sum(abs(Rpeaks - medpeaks));
+    
     
     % Tworzenie macierzy parametrów klasyfikujących
-    ECG_FEATURES_SIGNAL = [ECG_FEATURES_SIGNAL; QRS_per_min, SDNN, data(signal_idx).emotion, data(signal_idx).id];
+    ECG_FEATURES_SIGNAL = [ECG_FEATURES_SIGNAL; QRS_per_min, SDNN,...
+        data(signal_idx).emotion, data(signal_idx).id, PPAmad];
+    
+%     id_string = sprintf('%03s', data(signal_idx).id); % Zamiana liczby na łańcuch o długości 3 z wiodącymi zerami
+%     ECG_people = [ECG_people; str2str(data(signal_idx).id)];
+
     
     save("ECG_FEATURES_SIGNAL.mat", "ECG_FEATURES_SIGNAL");
-    
+%     save("ECG_people.mat", "ECG_people");
     
     %% ----- Podział sygnału na okna do analizy ----- %%
     

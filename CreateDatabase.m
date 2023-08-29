@@ -3,7 +3,6 @@ close all;
 clc;
 
 fs = 1000;
-Tp = 1/fs;
 
 
 % Inicjalizacja struktury
@@ -31,12 +30,11 @@ for i = 1:numel(files)
             data(i).signal2 = data(i).signal2;
             
             data(i).signal3 = file_data(:, 6);
-            data(i).signal6 = data(i).signal3; %%
             
             data(i).signal3 = RESP_Filters(data(i).signal3);
             
+            data(i).signal3 = MetodaFalkowa2(data(i).signal3);
 
-            
             data(i).signal4 = file_data(:, 8);
             data(i).signal4 = RESP_Filters(data(i).signal4);
             
@@ -51,6 +49,15 @@ for i = 1:numel(files)
             data(i).emotion = file_data(1, 16);
             data(i).id = file_data(1, 17);
             
+            %             grid on;
+            %             plot(data(i).signal3);
+            %             hold on;
+            %             plot(data(i).signal2);
+            %             plot(data(i).signal1);
+            %
+            %             findpeaks(data(i).signal3, fs, 'MinPeakWidth', 0.495, 'MinPeakDistance', 0.95, 'MinPeakHeight', mean(data(i).signal3));
+            %             grid on;
+             
         else
             fprintf('Nieprawidłowy format pliku: %s\n', files(i).name);
         end
@@ -95,3 +102,9 @@ save("data.mat", "data");
 % 
 % % Dodanie tytułu wykresu
 % title('Sygnał po filtracji (od 70 s do 80 s)');
+
+
+
+
+
+
