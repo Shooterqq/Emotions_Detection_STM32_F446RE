@@ -3,8 +3,10 @@ function EDA_F = EDA_Filters(edaf)
     load('LPF_EDA.mat');
     
     outputEDA = filter(LPF_EDA, 1, edaf);
-    
+    outputEDA  = outputEDA(50:end);
+        
     filtered_eda = movmean(outputEDA, 15);
+
     
 %     % Odjęcie wartości średniej
 %     mean_value = mean(filtered_eda);

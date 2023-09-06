@@ -16,7 +16,6 @@ data = data.data;
 
 for signal_idx = 1:length(data) % wczytywanie po sygnale do analizy
     signal = data(signal_idx); % przypisanie sygnalu do zmiennej
-    signal.signal1  = signal.signal1(100:end); % Usunięcie zakłóconego fragmentu sygnału przez filtr LPF
     
     normalized_signal = zscore(signal.signal1); % Normalizacja sygnał EDA (zalecane)
     
@@ -31,7 +30,8 @@ for signal_idx = 1:length(data) % wczytywanie po sygnale do analizy
     solver = 'quadprog'; % sparse QP solver to be used, 'quadprog' or 'sedumi'
     
     % Wywołanie funkcji cvxEDA do analizy sygnału
-    [r, p, t, l, d, e, obj] = cvxEDA(normalized_signal, 1/fs, tau0, tau1, delta_knot, alpha, gamma, solver);
+    [r, p, t, l, d, e, obj] = cvxEDA(normalized_signal, 1/fs, tau0,...
+        tau1, delta_knot, alpha, gamma, solver);
     
     %% --------------------- Ekstrakcja cech --------------------- %%
     

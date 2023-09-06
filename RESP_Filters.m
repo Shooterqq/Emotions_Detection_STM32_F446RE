@@ -26,7 +26,6 @@ function Resp = RESP_Filters(resp)
 
     % filtracja górno przepustowa
     filtered_resp = filter(HPF_RESPIRATION, 1, filtered_resp);
-    
     filtered_resp = filtered_resp(1000:end);
     
     % filtr usredniajacy
@@ -38,5 +37,6 @@ function Resp = RESP_Filters(resp)
     
     Resp = filtered_resp;
 end
+
 
 

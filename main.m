@@ -9,10 +9,10 @@ clc;
 
 file_path = 'data.mat';
 
-%  
-% SignalOneFeatures = SignalOneFeatures(file_path);
-% SignalTwoFeatures = SignalTwoFeatures(file_path);
-% SignalThreeFeatures = SignalThreeFeatures(file_path);
+ 
+SignalOneFeatures = SignalOneFeatures(file_path);
+SignalTwoFeatures = SignalTwoFeatures(file_path);
+SignalThreeFeatures = SignalThreeFeatures(file_path);
 
 
 load('data.mat');
@@ -69,13 +69,12 @@ filtered_data_matrix = filtered_data_matrix(~rows_to_remove_column_9, :);
 % Tworzenie tabeli z danymi
 data_table = table(filtered_data_matrix(:, 1:7), categorical(filtered_data_matrix(:, 8)),...
     categorical(filtered_data_matrix(:, 9)), filtered_data_matrix(:, 10:14));
-% 
+ 
 % % Wyświetlenie pierwszych kilku wierszy tabeli
 % disp(data_table(1:5, :));
 
-% Zapisanie tabeli do pliku CSV
-writetable(data_table, 'dane_classificationlearner.csv');
-
+% % Zapisanie tabeli do pliku CSV
+% writetable(data_table, 'dane_classificationlearner.csv');
 
 
 % pattern_data_matrix_in = [RESP_FEATURES_SIGNAL(:, 1), RESP_FEATURES_SIGNAL(:, 4), ECG_FEATURES_SIGNAL(:, 1:2), Features_EDA(:, 1:4)];
@@ -108,18 +107,7 @@ end
 
 % pattern_data_matrix_out = pattern_data_matrix_out';
 
-
-
 filtered_data_matrix = [filtered_data_matrix(:, 1:8), filtered_data_matrix(:, 10:end),];
-
-
-
-
-
-
-
-
-
 
 % Zakończenie pomiaru czasu
 elapsed_time = toc;

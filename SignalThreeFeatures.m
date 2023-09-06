@@ -15,7 +15,8 @@ for signal_idx = 1:length(data) % wczytywanie po sygnale do analizy
     
     % Znalezienie maksimów sygnału o zadanej szerokości szczytu 0,83 hz
     %     [peaks, locs] = findpeaks(signal.signal3,fs,'MinPeakWidth',0.2, 'MinPeakDistance', 0.95);
-    [peaks, locs] = findpeaks(signal.signal3, fs, 'MinPeakWidth', 0.495, 'MinPeakDistance', 0.95, 'MinPeakHeight', mean(signal.signal3));
+    [peaks, locs] = findpeaks(signal.signal3, fs, 'MinPeakWidth', 0.495,...
+        'MinPeakDistance', 0.95, 'MinPeakHeight', mean(signal.signal3));   
     
     % ilosc od szczytu do 1 szczytu do ostatniego -1 // czas = ilosc oddechow
     

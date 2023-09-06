@@ -33,18 +33,18 @@ for signal_idx = 1:length(data) % wczytywanie po sygnale do analizy
     y = abs(y).^2; % Kwadrat wartości amplitudy
     avg = mean(y); % Średnia wartość kwadratu
     
-    if avg < 0.15
+    if avg > 0.15
         
-        [Rpeaks, Rlocs] = findpeaks(y, t, 'MinPeakHeight', 8 * avg, 'MinPeakDistance' , 50); % Wyszukanie pików R
+        [Rpeaks, Rlocs] = findpeaks(y, t, 'MinPeakHeight',...
+            4 * avg, 'MinPeakDistance' , 50); % Wyszukanie pików R
         nohb = length(Rlocs);
         timelimit = length(ecgsig)/fs; % Czas trwania sygnału w sekundach
-        QRS_per_min = (nohb * 60) / timelimit;
+        QRS_per_min = (nohb * 60) / timelimit; % Liczba pików R na minutę
         
     else
         
-        %% --- Wyznaczanie załamków R z wykorzystaniem algorytmu Pan-Tompkins --- %%
-        
-        [Rpeaks, Rlocs, delay] = pan_tompkin(signal.signal2, 1000, 0);
+        %% --- Wyznaczanie załamków R z wykorzystaniem algorytmu Pan-Tompkins --- %%     
+        [Rpeaks, Rlocs, delay] = pan_tompkin(signal.signal2, fs, 0);
         signal_QRS = length(signal.signal2)/(fs*60); % Obliczenie czasu sygnału w minutach
         QRS_per_min = length(Rpeaks)/signal_QRS; % Liczba pików R na minutę
         
