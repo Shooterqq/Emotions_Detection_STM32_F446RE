@@ -4,7 +4,7 @@ function SignalOneFeatures = SignalOneFeatures(file_path)
 
 %% ----- Wczytanie sygnału do analizy oraz deklaracja zmiennych ----- %%
 
-fs = 1000;
+fs = 848;
 Features_EDA = [];
 
 data = load(file_path);
@@ -77,7 +77,7 @@ for signal_idx = 1:length(data) % wczytywanie po sygnale do analizy
     % Tworzenie macierzy parametrów klasyfikujących
     Features_EDA = [Features_EDA; peaks_per_min, high_peaks_per_min, ...
         mean_peaks_amplitude_per_min, mean_r_per_min, ...
-        data(signal_idx).emotion];
+        std_peak_per_min, data(signal_idx).emotion];
     
     save("Features_EDA.mat", "Features_EDA");
     

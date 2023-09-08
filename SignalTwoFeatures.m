@@ -5,7 +5,7 @@ function SignalTwoFeatures = SignalTwoFeatures(file_path)
 
 %% ----- Wczytanie sygnału do analizy oraz deklaracja zmiennych ----- %%
 
-fs = 1000;
+fs = 846;
 ECG_FEATURES_SIGNAL = [];
 
 data = load(file_path);
@@ -33,20 +33,20 @@ for signal_idx = 1:length(data) % wczytywanie po sygnale do analizy
     y = abs(y).^2; % Kwadrat wartości amplitudy
     avg = mean(y); % Średnia wartość kwadratu
     
-    if avg > 0.15
+    if avg < 0.35
         
         [Rpeaks, Rlocs] = findpeaks(y, t, 'MinPeakHeight',...
-            4 * avg, 'MinPeakDistance' , 50); % Wyszukanie pików R
+            4 * avg, 'MinPeakDistance' , 300); % Wyszukanie pików R
         nohb = length(Rlocs);
-        timelimit = length(ecgsig)/fs; % Czas trwania sygnału w sekundach
-        QRS_per_min = (nohb * 60) / timelimit; % Liczba pików R na minutę
+        timelimit = length(ecgsig)/(fs * 60); % Czas trwania sygnału w minutach
+        QRS_per_min = length(Rlocs) / timelimit; % Liczba pików R na minutę
         
     else
         
         %% --- Wyznaczanie załamków R z wykorzystaniem algorytmu Pan-Tompkins --- %%     
         [Rpeaks, Rlocs, delay] = pan_tompkin(signal.signal2, fs, 0);
-        signal_QRS = length(signal.signal2)/(fs*60); % Obliczenie czasu sygnału w minutach
-        QRS_per_min = length(Rpeaks)/signal_QRS; % Liczba pików R na minutę
+        timelimit = length(signal.signal2)/(fs * 60); % Obliczenie czasu sygnału w minutach
+        QRS_per_min = length(Rpeaks)/timelimit; % Liczba pików R na minutę
         
     end
     
@@ -76,10 +76,13 @@ for signal_idx = 1:length(data) % wczytywanie po sygnale do analizy
     % Obliczenie Średnie Bezwzględne Odchylenie (MAD) amplitud od szczytu do szczytu (PPA)
     PPAmad = (1/length(Rpeaks)) * sum(abs(Rpeaks - medpeaks));
     
+    % Obliczenie odchylenia standardowego znalezionych szczytów
+    std_per_min = std(Rpeaks)/timelimit;
+    
     
     % Tworzenie macierzy parametrów klasyfikujących
     ECG_FEATURES_SIGNAL = [ECG_FEATURES_SIGNAL; QRS_per_min, SDNN,...
-        data(signal_idx).emotion, data(signal_idx).id, PPAmad];
+        data(signal_idx).emotion, data(signal_idx).id, PPAmad, std_per_min];
     
 %     id_string = sprintf('%03s', data(signal_idx).id); % Zamiana liczby na łańcuch o długości 3 z wiodącymi zerami
 %     ECG_people = [ECG_people; str2str(data(signal_idx).id)];

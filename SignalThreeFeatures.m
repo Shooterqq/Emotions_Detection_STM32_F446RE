@@ -2,7 +2,7 @@
 
 function SignalThreeFeatures = SignalThreeFeatures(file_path)
 
-fs = 1000;
+fs = 848;
 RESP_FEATURES_SIGNAL = [];
 
 data = load(file_path);
@@ -18,9 +18,11 @@ for signal_idx = 1:length(data) % wczytywanie po sygnale do analizy
     [peaks, locs] = findpeaks(signal.signal3, fs, 'MinPeakWidth', 0.495,...
         'MinPeakDistance', 0.95, 'MinPeakHeight', mean(signal.signal3));   
     
+    % Zamienione MinPeakDistance z 0.95 na 1.75
+    
     % ilosc od szczytu do 1 szczytu do ostatniego -1 // czas = ilosc oddechow
     
-    % Oblicz odstępy RR (czas między kolejnymi szczytami)
+    % Oblicz odstępy RR (czas między kolejnymi szczytami w sekundach)
     rr_intervals = diff(locs) / fs;
     
     % Oblicz średnią długość odstępu RR
@@ -39,19 +41,23 @@ for signal_idx = 1:length(data) % wczytywanie po sygnale do analizy
     signal_mins = (locs(end) - locs(1))/60; % Obliczenie czasu sygnalu w minutach
     resp_per_min = (length(locs)/signal_mins) - 1; % Obliczenie ilosci oddechów na minutę
     
-    mean_resp_amp = mean(peaks);
+    mean_resp_amp = mean(peaks)/signal_mins;
     
-    mean_resp_signal = mean(signal.signal3);
+    mean_resp_signal = mean(signal.signal3)/signal_mins;
     
     % Mediana z szczytów
-    medpeaks = median(peaks);
+    medpeaks = median(peaks)/signal_mins;
     
     % Obliczenie Średnie Bezwzględne Odchylenie (MAD) amplitud od szczytu do szczytu (PPA)
     PPAmad = (1/length(peaks)) * sum(abs(peaks - medpeaks));
     
+    % Obliczenie odchylenia standardowego znalezionych szczytów
+    std_per_min = std(peaks)/signal_mins;
+    
     
     RESP_FEATURES_SIGNAL = [RESP_FEATURES_SIGNAL; resp_per_min,...
-        data(signal_idx).emotion, data(signal_idx).id, SDNN, mean_resp_amp, mean_resp_signal, PPAmad];
+        data(signal_idx).emotion, data(signal_idx).id, SDNN,...
+        mean_resp_amp, mean_resp_signal, PPAmad, std_per_min];
     
     save("RESP_FEATURES_SIGNAL.mat", "RESP_FEATURES_SIGNAL");
     

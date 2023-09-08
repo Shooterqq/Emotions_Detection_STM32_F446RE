@@ -2,8 +2,6 @@ clear all;
 close all;
 clc;
 
-fs = 1000;
-
 
 % Inicjalizacja struktury
 data = struct();
