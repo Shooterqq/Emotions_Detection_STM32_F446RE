@@ -5,7 +5,7 @@ function SignalTwoFeatures = SignalTwoFeatures(file_path)
 
 %% ----- Wczytanie sygnału do analizy oraz deklaracja zmiennych ----- %%
 
-fs = 846;
+fs = 1000;
 ECG_FEATURES_SIGNAL = [];
 
 data = load(file_path);

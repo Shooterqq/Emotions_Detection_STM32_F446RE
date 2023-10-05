@@ -2,6 +2,7 @@ clear all;
 close all;
 clc;
 
+fs = 1000;
 
 % Inicjalizacja struktury
 data = struct();
@@ -32,6 +33,7 @@ for i = 1:numel(files)
             
             % Filtracja i zapis sygnału respiracji
             data(i).signal3 = file_data(:, 6);
+            data(i).signal30 = file_data(:, 6);
             data(i).signal3 = RESP_Filters(data(i).signal3);
             data(i).signal3 = Wavelet_Filters(data(i).signal3);
             
@@ -74,35 +76,35 @@ save("data.mat", "data");
 
 % % Wygenerowanie wektora czasu dla całego sygnału
 % t = (0:length(data(4).signal2)-1) / fs;
-%
+% 
 % % Określenie zakresu czasu do wyświetlenia (od 40 do 90 sekundy)
 % start_time = 50; % Sekundy
 % end_time = 80;   % Sekundy
-%
+% 
 % % Indeksowanie fragmentu sygnału w wybranym zakresie czasu
 % idx = (t >= start_time) & (t <= end_time);
 % t_subset = t(idx);
 % output_LPF_subset = data(5).signal2(idx);
 % orginalecg_subset = data(5).signal6(idx);
-%
+% 
 % % qw = data(2).signal2(idx);
 % % we = data(2).signal6(idx);
-%
+% 
 % % Narysowanie wykresu sygnału w wybranym zakresie czasu
 % figure;
 % plot(t_subset, output_LPF_subset);
 % hold on;
 % plot(t_subset, orginalecg_subset);
-%
+% 
 % % plot(t_subset, qw);
 % % plot(t_subset, we);
-%
+% 
 % % Ustawienie etykiety dla osi x
 % xlabel('Czas [s]');
-%
+% 
 % % Ustawienie etykiety dla osi y
 % ylabel('Amplituda');
-%
+% 
 % % Dodanie tytułu wykresu
 % title('Sygnał po filtracji (od 70 s do 80 s)');
 

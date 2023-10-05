@@ -265,6 +265,95 @@ ylabel('Amplituda [mV]');
 
 
 
+% Wektory czasu dla obu sygnałów (możesz dostosować je do rzeczywistych danych)
+czas_signal30 = (1:length(data.signal30)) / fs; % Zakłada się, że sygnał data.signal30 ma częstotliwość próbkowania fs
+czas_signal3 = (1:length(data.signal3)) / fs;   % Zakłada się, że sygnał data.signal3 ma częstotliwość próbkowania fs
+
+% Usuń ostatnie 20 sekund z wektorów czasu
+czas_signal30 = czas_signal30(1:end-20*fs); % fs to częstotliwość próbkowania
+data.signal30 = data.signal30(1:length(czas_signal30));
+
+czas_signal3 = czas_signal3(1:end-20*fs); % fs to częstotliwość próbkowania
+data.signal3 = data.signal3(1:length(czas_signal3));
+
+% Znajdź maksima sygnału data.signal3
+[peaks, locs] = findpeaks(data.signal3, fs, 'MinPeakWidth', 0.495,...
+        'MinPeakDistance', 0.95, 'MinPeakHeight', mean(data.signal3)); 
+    
+% Ustawienie dwóch podwykresów w jednym oknie
+figure;
+
+% Pierwszy podwykres
+subplot(2,1,1); % 2 wiersze, 1 kolumna, pierwszy podwykres
+plot(czas_signal30, data.signal30, 'b');
+title('Sygnał respiracji');
+xlabel('Czas (s)');
+ylabel('Amplituda');
+grid on;
+
+% Drugi podwykres
+subplot(2,1,2); % 2 wiersze, 1 kolumna, drugi podwykres
+plot(czas_signal3, data.signal3, 'r');
+title('Wyfiltrowany sygnał respiracji z znalezionymi lokalnymi maksimami');
+xlabel('Czas (s)');
+ylabel('Amplituda');
+grid on;
+
+% Dodaj znaczniki dla maksimów na drugim podwykresie
+hold on; % Utrzymaj aktualny wykres aktywny
+plot(czas_signal3(locs), peaks + 0.05, 'kv', 'MarkerFaceColor', 'k'); % Czarne trójkąty
+hold off; % Zakończ utrzymywanie wykresu
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+% Dane sygnału
+signal3 = data.signal3;
+
+minPeakWidth = 0.495;
+minPeakDistance = 0.95;
+minPeakHeight = mean(signal3);
+
+% Znajdź maksima
+[peaks, locs] = findpeaks(signal3, fs, 'MinPeakWidth', minPeakWidth, ...
+    'MinPeakDistance', minPeakDistance, 'MinPeakHeight', minPeakHeight);
+
+% Tworzenie wykresu
+figure;
+plot(signal3);
+hold on;
+
+% Zaznacz maksima czarnymi trójkątami
+plot(locs, peaks, 'kv', 'MarkerFaceColor', 'k');
+
+% Dodaj etykiety i tytuł
+xlabel('Czas (s)');
+ylabel('Amplituda');
+title('Sygnał z zaznaczonymi maksimami');
+
+% Legenda
+legend('Sygnał', 'Maksima');
+
+% Zatrzymanie trybu "hold on"
+hold off;
+
+
+
+    [peaks, locs] = findpeaks(data.signal3, fs, 'MinPeakWidth', 0.495,...
+        'MinPeakDistance', 0.95, 'MinPeakHeight', mean(data.signal3));   

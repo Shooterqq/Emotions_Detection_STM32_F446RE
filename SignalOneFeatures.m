@@ -4,7 +4,7 @@ function SignalOneFeatures = SignalOneFeatures(file_path)
 
 %% ----- Wczytanie sygnału do analizy oraz deklaracja zmiennych ----- %%
 
-fs = 848;
+fs = 1000;
 Features_EDA = [];
 
 data = load(file_path);

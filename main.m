@@ -11,9 +11,9 @@ clc;
 
 file_path = 'data.mat';
 
-SignalOneFeatures = SignalOneFeatures(file_path);
+% SignalOneFeatures = SignalOneFeatures(file_path);
 SignalTwoFeatures = SignalTwoFeatures(file_path);
-SignalThreeFeatures = SignalThreeFeatures(file_path);
+% SignalThreeFeatures = SignalThreeFeatures(file_path);
 
 %% -------- Tworzenie macierzy z wszystkimi parametrami -------- %%
 
@@ -29,7 +29,7 @@ data_matrix = [RESP_FEATURES_SIGNAL(:, 1), ECG_FEATURES_SIGNAL(:, 1:2),...
     Features_EDA(:, 1:4), Features_EDA(:, 6), Features_EDA(:, 5)...
      RESP_FEATURES_SIGNAL(:, 3:8), ECG_FEATURES_SIGNAL(:, 5:6)];
 
-%% ------ Usunwanie wybranych emocji z macierzy parametrów ------ %%
+%% ---- Usunwanie wybranych  nr emocji z macierzy parametrów ---- %%
  
 values_to_remove = [3,1,2,4,6]; % Wybierz emocje do usunięcia
 
@@ -71,10 +71,10 @@ filtered_data_matrix = filtered_data_matrix(~rows_to_remove_column_9, :);
 %% ------- Tworzenie tabeli do Classification Learner ------ %%
 
 % Tworzenie tabeli z danymi
-data_table = table(filtered_data_matrix(:, 1:7),...
-    categorical(filtered_data_matrix(:, 8)),...
-    categorical(filtered_data_matrix(:, 9)),...
-    filtered_data_matrix(:, 10:16));
+data_table = table(filtered_data_matrix(:, 1:7),... % parametry
+    categorical(filtered_data_matrix(:, 8)),... % kolumna emocji
+    categorical(filtered_data_matrix(:, 9)),... % kolumna ID
+    filtered_data_matrix(:, 10:16)); % parametry
 
 % % Zapisanie tabeli do pliku CSV
 % writetable(data_table, 'dane_classificationlearner.csv');
@@ -85,8 +85,8 @@ data_table = table(filtered_data_matrix(:, 1:7),...
 % Tworzenie macierzy parametrów wejściowych do aplikacji 
 % Neural Net Pattern Recognition
 pattern_data_matrix_in = [filtered_data_matrix(:, 1:2),...
-    filtered_data_matrix(:, 4), filtered_data_matrix(:, 7),filtered_data_matrix(:, 11),...
-    filtered_data_matrix(:, 13)];
+    filtered_data_matrix(:, 4), filtered_data_matrix(:, 7),...
+    filtered_data_matrix(:, 16)];
 
 
 % Tworzenie macierzy parametrów WYJSCIOWYCH do aplikacji 
@@ -109,7 +109,6 @@ for i = 1:length(emotions)
 end
 
 %%
-
 % Zakończenie pomiaru czasu
 elapsed_time = toc;
 

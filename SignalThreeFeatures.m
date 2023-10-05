@@ -2,7 +2,7 @@
 
 function SignalThreeFeatures = SignalThreeFeatures(file_path)
 
-fs = 848;
+fs = 1000;
 RESP_FEATURES_SIGNAL = [];
 
 data = load(file_path);
