@@ -2,5 +2,5 @@
 Emotions_Detection_STM32_F446RE 
 
 
-Check "Piotr Wiski - Prezentacja dyplomowa.pptx"
+Please check "Piotr Wiski - Prezentacja dyplomowa.pptx"
 
