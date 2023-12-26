@@ -15,6 +15,7 @@ For the purposes of this work, the focus was on three signals:
 These signals were obtained thanks to appropriate modules placed on the respondents' bodies during research involving watching video content evoking a wide spectrum of emotions (7 different emotions). The acquisition of signals from the sensors was carried out by an appropriately programmed stm32 microcontroller, which acquired on 5 ADC channels with a sampling frequency of 1 kHz.
 
 Using MATLAB software, after collecting the signal database, they were filtered using FIR filters and wavelet transform.
+
 ![image](https://github.com/Shooterqq/Emotions_Detection_STM32_F446RE/assets/102792345/e396144e-f78d-4cf4-a5a1-5762277076e0)
 
 ![image](https://github.com/Shooterqq/Emotions_Detection_STM32_F446RE/assets/102792345/1291d16d-bdbf-461a-88ba-f78500479289)
@@ -24,6 +25,7 @@ Using MATLAB software, after collecting the signal database, they were filtered 
 Then, feature extraction was performed, including the use of optimization methods on the EDA signal to separate the SCR component from the SCL. Heart rate (HR) and HRV were also calculated using the discrete wavelet transform. Using the wavelet transform and the Symlet4 wavelet, the respondents' breathing rate was also calculated.
 
 ![image](https://github.com/Shooterqq/Emotions_Detection_STM32_F446RE/assets/102792345/d10b410a-b0ac-4f66-b4b0-237dd2206455)
+
 ![image](https://github.com/Shooterqq/Emotions_Detection_STM32_F446RE/assets/102792345/56a8f04c-e2c5-41d1-9a76-29ff721d2c68)
 
 The extracted features were fed into machine learning, as a result of which two neural networks were trained, one with an emotion recognition efficiency of 78.6% and the other, after taking into account corrections and conducting additional tests, with 100% efficiency.
